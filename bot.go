@@ -41,9 +41,6 @@ func (b *Bot) handle(e slack.RTMEvent) {
 	info := b.RTM.GetInfo()
 
 	switch ev := e.Data.(type) {
-	case *slack.UserTypingEvent:
-		b.RTM.SendMessage(b.RTM.NewTypingMessage(ev.Channel))
-
 	case *slack.MessageEvent:
 		if !(ev.Type == "message" && ev.SubType == "") {
 			return
