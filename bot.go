@@ -73,7 +73,7 @@ func (b *Bot) handle(e slack.RTMEvent) {
 				b.RTM.SendMessage(b.RTM.NewTypingMessage(ev.Channel))
 				time.Sleep(time.Second / 2)
 
-				reply := b.Model.Reply(text)
+				reply := fate.QuoteFix(b.Model.Reply(text))
 				log.Printf("Replying: '%s'", reply)
 
 				msg := fmt.Sprintf("<@%s> %s", ev.User, reply)
