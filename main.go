@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/nlopes/slack"
 	"github.com/pteichman/fate"
+	"github.com/slack-go/slack"
 )
 
 func main() {

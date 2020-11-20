@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nlopes/slack"
 	"github.com/pteichman/fate"
+	"github.com/slack-go/slack"
 )
 
 type Bot struct {
