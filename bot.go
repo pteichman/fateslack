@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -37,7 +38,7 @@ func newBot(rtm *slack.RTM, model *fate.Model) (*Bot, error) {
 // toRe matches messages to users.
 var toRe = regexp.MustCompile("@[^ ]+")
 
-func (b *Bot) handle(e slack.RTMEvent) {
+func (b *Bot) handle(e slack.RTMEvent, learnLog *os.File) {
 	info := b.RTM.GetInfo()
 
 	switch ev := e.Data.(type) {
@@ -60,8 +61,15 @@ func (b *Bot) handle(e slack.RTMEvent) {
 			text = strings.TrimSpace(strings.TrimPrefix(text, m[0]))
 		}
 
-		log.Printf("Learning: '%s'", text)
+		log.Printf("Learning: %q", text)
 		b.Model.Learn(text)
+
+		if learnLog != nil {
+			_, err := learnLog.WriteString(text + "\n")
+			if err != nil {
+				log.Printf("ERROR: Writing log: %s", err)
+			}
+		}
 
 		from := getUserByID(b.users, ev.User)
 		if from != nil && from.IsBot {
@@ -74,7 +82,7 @@ func (b *Bot) handle(e slack.RTMEvent) {
 				time.Sleep(time.Second / 2)
 
 				reply := fate.QuoteFix(b.Model.Reply(text))
-				log.Printf("Replying: '%s'", reply)
+				log.Printf("Replying: %q", reply)
 
 				msg := fmt.Sprintf("<@%s> %s", ev.User, reply)
 				b.RTM.SendMessage(b.RTM.NewOutgoingMessage(msg, ev.Channel))

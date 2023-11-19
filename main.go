@@ -11,6 +11,8 @@ import (
 )
 
 func main() {
+	writeFilename := flag.String("w", "", "log all learned inputs to this file")
+
 	flag.Parse()
 
 	token := os.Getenv("SLACK_API_TOKEN")
@@ -19,7 +21,23 @@ func main() {
 	}
 
 	model := fate.NewModel(fate.Config{Stemmer: newStemmer("english")})
-	for _, file := range flag.Args() {
+
+	var (
+		err        error
+		writeFile  *os.File
+		learnFiles []string
+	)
+
+	learnFiles = append(learnFiles, flag.Args()...)
+	if *writeFilename != "" {
+		learnFiles = append(learnFiles, *writeFilename)
+		writeFile, err = os.OpenFile(*writeFilename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("ERROR: Couldn't open log file: %s", err)
+		}
+	}
+
+	for _, file := range learnFiles {
 		err := learnFile(model, file)
 		if err != nil {
 			log.Fatalf("ERROR: Learning %s: %s", file, err)
@@ -34,7 +52,7 @@ func main() {
 
 	go rtm.ManageConnection()
 	for {
-		bot.handle(<-rtm.IncomingEvents)
+		bot.handle(<-rtm.IncomingEvents, writeFile)
 	}
 }
 
